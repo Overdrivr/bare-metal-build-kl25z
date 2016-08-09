@@ -1,0 +1,39 @@
+cflags = -Wall -Icore -mcpu=cortex-m0plus --specs=nosys.specs -mthumb -ffunction-sections -fdata-sections -fmessage-length=0 -mfloat-abi=soft
+
+rule cpp
+  command = arm-none-eabi-g++ $cflags -DCPU_MKL25Z128VFM4=1 -c $in -o $out
+
+rule cc
+  command = arm-none-eabi-gcc $cflags -DCPU_MKL25Z128VFM4=1 -c $in -o $out
+
+rule pack
+  command = arm-none-eabi-gcc-ar -r $out $in
+
+rule link
+  command = arm-none-eabi-gcc $cflags -T platform/MKL25Z4/linker/gcc/MKL25Z128xxx4_flash.ld -o $out $in -L ./build -l_MKL25Z4
+
+rule tobinary
+  command = arm-none-eabi-objcopy -O binary $in $out
+
+rule flash
+  command = python copybin.py
+
+# 1 - Build main file
+build build/main.o : cpp main/main.cpp
+
+# 2 - Build platform definition and startup files
+build build/system_MKL25Z4.o : cc platform/system_MKL25Z4.c
+build build/startup.o : cc platform/startup.c
+build build/startup_MKL25Z4.o : cc platform/MKL25Z4/startup/gcc/startup_MKL25Z4.S
+
+# 3 - Create startup library
+build build/lib_MKL25Z4.a : pack build/startup.o build/system_MKL25Z4.o build/startup_MKL25Z4.o
+
+# 4 - Link all in a .elf file
+build build/main.elf : link build/main.o
+
+# 5 - Convert the .elf into a raw binary file that can be drag'n'drop on the board (with OpenSDA mass-storage bootloader)
+build build/main.bin : tobinary build/main.elf
+
+# 6 - Flash
+build foo : flash .\build\main.bin
