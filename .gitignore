@@ -77,3 +77,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Build related files
+build/
+.ninja_log
+.ninja_deps
