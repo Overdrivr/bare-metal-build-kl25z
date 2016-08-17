@@ -32,6 +32,7 @@ It is recommended to update the bootloader KL25Z with the latest, available at
 [pemicro](http://www.pemicro.com/opensda/) (in category *OpenSDA Firmware*)
 
 To update the bootloader:
+
 1. disconnect the board
 2. hold the press-button
 3. connect the usb cable to the board (on the OpenSDA USB port)
