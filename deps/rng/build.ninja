@@ -1,0 +1,26 @@
+modulename = rng
+cflags = -Wall -Icore -mcpu=cortex-m0plus --specs=nosys.specs -mthumb -ffunction-sections -fdata-sections -fmessage-length=0 -mfloat-abi=soft
+
+rule cpp
+  command = arm-none-eabi-g++ $cflags -DCPU_MKL25Z128VFM4=1 -I.. -c $in -o $out
+
+rule cc
+  command = arm-none-eabi-gcc $cflags -DCPU_MKL25Z128VFM4=1 -c $in -o $out
+
+rule pack
+  command = arm-none-eabi-gcc-ar -r $out $in
+
+rule link
+  command = arm-none-eabi-gcc $cflags -T platform/MKL25Z4/linker/gcc/MKL25Z128xxx4_flash.ld -o $out $in -L ./build -l_MKL25Z4
+
+rule tobinary
+  command = arm-none-eabi-objcopy -O binary $in $out
+
+rule flash
+  command = python copybin.py
+
+# 1 - Build files
+build build/${modulename}.o : cpp cpp/${modulename}.cpp
+
+# 2 - Create library
+build build/lib${modulename}.a : pack build/${modulename}.o
